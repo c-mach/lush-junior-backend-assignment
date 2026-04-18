@@ -1,18 +1,12 @@
 import { createServer } from "node:http"
-import { createSchema, createYoga } from "graphql-yoga"
+import { createYoga } from "graphql-yoga"
+import { schema } from "./schema"
+import { prisma } from "./db/prisma"
 
 const yoga = createYoga({
-  schema: createSchema({
-    typeDefs: /* GraphQL */ `
-      type Query {
-        hello: String!
-      }
-    `,
-    resolvers: {
-      Query: {
-        hello: () => "Hello world",
-      },
-    },
+  schema,
+  context: async () => ({
+    prisma,
   }),
 })
 

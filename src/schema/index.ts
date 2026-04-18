@@ -1,9 +1,15 @@
 import { builder } from "./builder"
+import "./task"
 
 builder.queryType({
   fields: (t) => ({
-    hello: t.string({
-      resolve: () => "Hello world",
+    tasks: t.field({
+      type: ["Task"],
+      resolve: async (_root, _args, ctx) => {
+        return ctx.prisma.task.findMany({
+          orderBy: { createdAt: "desc" },
+        })
+      },
     }),
   }),
 })

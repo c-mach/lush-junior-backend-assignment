@@ -24,14 +24,15 @@
   "homepage": "https://github.com/c-mach/lush-junior-backend-assignment#readme",
   "dependencies": {
     "@pothos/core": "^4.12.0",
-    "@prisma/client": "^7.7.0",
+    "@prisma/client": "^6.19.3",
     "graphql": "^16.13.2",
     "graphql-yoga": "^5.21.0",
+    "prisma": "^6.19.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "prisma": "^7.7.0",
+    "dotenv": "^17.4.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.4"

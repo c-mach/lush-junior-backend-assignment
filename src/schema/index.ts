@@ -1,9 +1,17 @@
 import { GraphQLError } from "graphql"
 import { builder } from "./builder"
 import "./task"
-import { taskIdSchema, addTaskSchema } from "../validation/task"
+import {
+  taskIdSchema,
+  addTaskSchema,
+  toggleTaskSchema,
+  deleteTaskSchema,
+} from "../validation/task"
 
-const DEFAULT_ERROR_MESSAGE = "Invalid input"
+const ERROR_MESSAGE = {
+  INVALID_INPUT: "Invalid input",
+  NOT_FOUND: "Task not found",
+}
 
 builder.queryType({
   fields: (t) => ({
@@ -26,7 +34,7 @@ builder.queryType({
 
         if (!parsed.success) {
           throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? DEFAULT_ERROR_MESSAGE,
+            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
           )
         }
 
@@ -35,7 +43,7 @@ builder.queryType({
         })
 
         if (!task) {
-          throw new GraphQLError("Task not found")
+          throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
         }
 
         return task
@@ -56,7 +64,7 @@ builder.mutationType({
 
         if (!parsed.success) {
           throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? DEFAULT_ERROR_MESSAGE,
+            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
           )
         }
 
@@ -64,6 +72,65 @@ builder.mutationType({
           data: {
             title: parsed.data.title,
           },
+        })
+      },
+    }),
+
+    toggleTask: t.field({
+      type: "Task",
+      args: {
+        id: t.arg.string({ required: true }),
+      },
+      resolve: async (_root, args, ctx) => {
+        const parsed = toggleTaskSchema.safeParse(args)
+
+        if (!parsed.success) {
+          throw new GraphQLError(
+            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
+          )
+        }
+
+        const existingTask = await ctx.prisma.task.findUnique({
+          where: { id: parsed.data.id },
+        })
+
+        if (!existingTask) {
+          throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
+        }
+
+        return ctx.prisma.task.update({
+          where: { id: parsed.data.id },
+          data: {
+            completed: !existingTask.completed,
+          },
+        })
+      },
+    }),
+
+    deleteTask: t.field({
+      type: "Task",
+      args: {
+        id: t.arg.string({ required: true }),
+      },
+      resolve: async (_root, args, ctx) => {
+        const parsed = deleteTaskSchema.safeParse(args)
+
+        if (!parsed.success) {
+          throw new GraphQLError(
+            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
+          )
+        }
+
+        const existingTask = await ctx.prisma.task.findUnique({
+          where: { id: parsed.data.id },
+        })
+
+        if (!existingTask) {
+          throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
+        }
+
+        return ctx.prisma.task.delete({
+          where: { id: parsed.data.id },
         })
       },
     }),

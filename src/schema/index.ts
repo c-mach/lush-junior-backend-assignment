@@ -67,12 +67,16 @@ builder.mutationType({
             parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
           )
         }
-
-        return ctx.prisma.task.create({
-          data: {
-            title: parsed.data.title,
-          },
-        })
+        try {
+          return await ctx.prisma.task.create({
+            data: {
+              title: parsed.data.title,
+            },
+          })
+        } catch {
+          console.error("addTask error:", error)
+          throw new GraphQLError("Failed to create task")
+        }
       },
     }),
 
@@ -98,12 +102,17 @@ builder.mutationType({
           throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
         }
 
-        return ctx.prisma.task.update({
-          where: { id: parsed.data.id },
-          data: {
-            completed: !existingTask.completed,
-          },
-        })
+        try {
+          return await ctx.prisma.task.update({
+            where: { id: parsed.data.id },
+            data: {
+              completed: !existingTask.completed,
+            },
+          })
+        } catch (error) {
+          console.error("toggleTask error:", error)
+          throw new GraphQLError("Failed to update task")
+        }
       },
     }),
 
@@ -129,9 +138,14 @@ builder.mutationType({
           throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
         }
 
-        return ctx.prisma.task.delete({
-          where: { id: parsed.data.id },
-        })
+        try {
+          return await ctx.prisma.task.delete({
+            where: { id: parsed.data.id },
+          })
+        } catch (error) {
+          console.error("deleteTask error:", error)
+          throw new GraphQLError("Failed to delete task")
+        }
       },
     }),
   }),

@@ -8,10 +8,14 @@ import {
   deleteTaskSchema,
   updateTaskTitleSchema
 } from "../validation/task"
+import { handleZodError } from "../utils/validation"
 
 const ERROR_MESSAGE = {
   INVALID_INPUT: "Invalid input",
   NOT_FOUND: "Task not found",
+  CREATE_FAILED: "Failed to create task",
+  UPDATE_FAILED: "Failed to update task",
+  DELETE_FAILED: "Failed to delete task",
 }
 
 builder.queryType({
@@ -34,9 +38,7 @@ builder.queryType({
         const parsed = taskIdSchema.safeParse(args)
 
         if (!parsed.success) {
-          throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
-          )
+          handleZodError(parsed.error, ERROR_MESSAGE.INVALID_INPUT)
         }
 
         const task = await ctx.prisma.task.findUnique({
@@ -64,9 +66,7 @@ builder.mutationType({
         const parsed = addTaskSchema.safeParse(args)
 
         if (!parsed.success) {
-          throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
-          )
+          handleZodError(parsed.error, ERROR_MESSAGE.INVALID_INPUT)
         }
         try {
           return await ctx.prisma.task.create({
@@ -74,9 +74,9 @@ builder.mutationType({
               title: parsed.data.title,
             },
           })
-        } catch {
+        } catch (error) {
           console.error("addTask error:", error)
-          throw new GraphQLError("Failed to create task")
+          throw new GraphQLError(ERROR_MESSAGE.CREATE_FAILED)
         }
       },
     }),
@@ -90,9 +90,7 @@ builder.mutationType({
         const parsed = toggleTaskSchema.safeParse(args)
 
         if (!parsed.success) {
-          throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
-          )
+          handleZodError(parsed.error, ERROR_MESSAGE.INVALID_INPUT)
         }
 
         const existingTask = await ctx.prisma.task.findUnique({
@@ -112,7 +110,7 @@ builder.mutationType({
           })
         } catch (error) {
           console.error("toggleTask error:", error)
-          throw new GraphQLError("Failed to update task")
+          throw new GraphQLError(ERROR_MESSAGE.UPDATE_FAILED)
         }
       },
     }),
@@ -126,9 +124,7 @@ builder.mutationType({
         const parsed = deleteTaskSchema.safeParse(args)
 
         if (!parsed.success) {
-          throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
-          )
+          handleZodError(parsed.error, ERROR_MESSAGE.INVALID_INPUT)
         }
 
         const existingTask = await ctx.prisma.task.findUnique({
@@ -145,7 +141,7 @@ builder.mutationType({
           })
         } catch (error) {
           console.error("deleteTask error:", error)
-          throw new GraphQLError("Failed to delete task")
+          throw new GraphQLError(ERROR_MESSAGE.DELETE_FAILED)
         }
       },
     }),
@@ -160,9 +156,7 @@ builder.mutationType({
         const parsed = updateTaskTitleSchema.safeParse(args)
 
         if (!parsed.success) {
-          throw new GraphQLError(
-            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
-          )
+          handleZodError(parsed.error, ERROR_MESSAGE.INVALID_INPUT)
         }
 
         const existingTask = await ctx.prisma.task.findUnique({
@@ -182,7 +176,7 @@ builder.mutationType({
           })
         } catch (error) {
           console.error("updateTaskTitle error:", error)
-          throw new GraphQLError("Failed to update task title")
+          throw new GraphQLError(ERROR_MESSAGE.UPDATE_FAILED)
         }
       },
     }),

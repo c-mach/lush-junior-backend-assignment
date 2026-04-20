@@ -95,4 +95,22 @@ describe("Task API", () => {
     expect(result.errors).toBeDefined()
     expect(result.errors[0].message).toContain("Title is required")
   })
+
+  it("updates a task title", async () => {
+    const task = await prisma.task.create({
+      data: { title: "Old title" },
+    })
+
+    const result = await graphqlRequest(`
+    mutation {
+      updateTaskTitle(id: "${task.id}", title: "New title") {
+        id
+        title
+      }
+    }
+  `)
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data.updateTaskTitle.title).toBe("New title")
+  })
 })

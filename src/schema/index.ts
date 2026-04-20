@@ -6,6 +6,7 @@ import {
   addTaskSchema,
   toggleTaskSchema,
   deleteTaskSchema,
+  updateTaskTitleSchema
 } from "../validation/task"
 
 const ERROR_MESSAGE = {
@@ -145,6 +146,43 @@ builder.mutationType({
         } catch (error) {
           console.error("deleteTask error:", error)
           throw new GraphQLError("Failed to delete task")
+        }
+      },
+    }),
+
+    updateTaskTitle: t.field({
+      type: "Task",
+      args: {
+        id: t.arg.string({ required: true }),
+        title: t.arg.string({ required: true }),
+      },
+      resolve: async (_root, args, ctx) => {
+        const parsed = updateTaskTitleSchema.safeParse(args)
+
+        if (!parsed.success) {
+          throw new GraphQLError(
+            parsed.error.issues[0]?.message ?? ERROR_MESSAGE.INVALID_INPUT,
+          )
+        }
+
+        const existingTask = await ctx.prisma.task.findUnique({
+          where: { id: parsed.data.id },
+        })
+
+        if (!existingTask) {
+          throw new GraphQLError(ERROR_MESSAGE.NOT_FOUND)
+        }
+
+        try {
+          return await ctx.prisma.task.update({
+            where: { id: parsed.data.id },
+            data: {
+              title: parsed.data.title,
+            },
+          })
+        } catch (error) {
+          console.error("updateTaskTitle error:", error)
+          throw new GraphQLError("Failed to update task title")
         }
       },
     }),

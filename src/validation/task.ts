@@ -21,3 +21,12 @@ export const toggleTaskSchema = z.object({
 export const deleteTaskSchema = z.object({
   id: z.string().cuid(INVALID_TASK_ID),
 })
+
+export const updateTaskTitleSchema = z.object({
+  id: z.string().cuid("Invalid task id"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(255, "Title is too long, maximum characters of 255"),
+})

@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql"
 import { builder } from "./builder"
-import "./task"
+import { TaskRef } from "./task"
 import {
   taskIdSchema,
   addTaskSchema,
@@ -17,7 +17,7 @@ const ERROR_MESSAGE = {
 builder.queryType({
   fields: (t) => ({
     tasks: t.field({
-      type: ["Task"],
+      type: [TaskRef],
       resolve: async (_root, _args, ctx) => {
         return ctx.prisma.task.findMany({
           orderBy: { createdAt: "desc" },
@@ -26,7 +26,7 @@ builder.queryType({
     }),
 
     task: t.field({
-      type: "Task",
+      type: TaskRef,
       args: {
         id: t.arg.string({ required: true }),
       },
@@ -56,7 +56,7 @@ builder.queryType({
 builder.mutationType({
   fields: (t) => ({
     addTask: t.field({
-      type: "Task",
+      type: TaskRef,
       args: {
         title: t.arg.string({ required: true }),
       },
@@ -82,7 +82,7 @@ builder.mutationType({
     }),
 
     toggleTask: t.field({
-      type: "Task",
+      type: TaskRef,
       args: {
         id: t.arg.string({ required: true }),
       },
@@ -118,7 +118,7 @@ builder.mutationType({
     }),
 
     deleteTask: t.field({
-      type: "Task",
+      type: TaskRef,
       args: {
         id: t.arg.string({ required: true }),
       },
@@ -151,7 +151,7 @@ builder.mutationType({
     }),
 
     updateTaskTitle: t.field({
-      type: "Task",
+      type: TaskRef,
       args: {
         id: t.arg.string({ required: true }),
         title: t.arg.string({ required: true }),

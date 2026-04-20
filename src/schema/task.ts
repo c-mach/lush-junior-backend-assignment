@@ -1,6 +1,16 @@
 import { builder } from "./builder"
 
-builder.objectType("Task", {
+type TaskShape = {
+  id: string
+  title: string
+  completed: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+export const TaskRef = builder.objectRef<TaskShape>("Task")
+
+TaskRef.implement({
   fields: (t) => ({
     id: t.exposeString("id"),
     title: t.exposeString("title"),
